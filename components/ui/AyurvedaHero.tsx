@@ -37,7 +37,7 @@ const AyurvedaHero: React.FC = () => {
             </h1>
 
             <button
-              className="group bg-green-600 mt-3 hover:bg-green-700 text-white px-12 py-4 rounded-full text-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-xl border-2 border-transparent hover:border-green-300"
+              className="group bg-[#009846] mt-3 hover:bg-green-700 text-white px-12 py-4 rounded-full text-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-xl border-2 border-transparent hover:border-green-300"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               Shop our best products
