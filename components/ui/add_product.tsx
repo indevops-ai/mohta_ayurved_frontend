@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getAuthToken } from "@/utils/auth";
 
 interface AddProductProps {
   isOpen: boolean;
@@ -52,7 +53,8 @@ export default function AddProductForm({ isOpen, onClose }: AddProductProps) {
     { sr_no: "", qty: "", price: "" },
   ]);
 
-  const apiToken = process.env.NEXT_PUBLIC_API_TOKEN;
+  const apiToken = getAuthToken();
+  const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
 
   type PriceFieldKey = "sr_no" | "qty" | "price";
 
@@ -124,7 +126,7 @@ export default function AddProductForm({ isOpen, onClose }: AddProductProps) {
     }
 
     try {
-      const res = await fetch("http://34.68.44.252:1337/api/products", {
+      const res = await fetch(`${apiDomain}/api/products`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiToken}`,

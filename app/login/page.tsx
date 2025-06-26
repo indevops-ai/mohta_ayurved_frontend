@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -12,8 +11,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPage, setSelectedPage] = useState("product"); // Default to product
   const router = useRouter();
   const { toast } = useToast();
+  const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -26,18 +27,25 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const res = await fetch("http://34.68.44.252:1337/api/auth/local", {
+      const res = await fetch(`${apiDomain}/api/auth/local`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, password }),
       });
 
       const data = await res.json();
+
       if (res.ok) {
         localStorage.setItem("token", data.jwt);
         localStorage.setItem("user", JSON.stringify(data.user));
         toast({ description: "Logged in successfully!" });
-        router.push("/product");
+
+        // Navigate based on selected radio button
+        if (selectedPage === "product") {
+          router.push("/product");
+        } else if (selectedPage === "product-logs") {
+          router.push("/product-logs");
+        }
       } else {
         toast({
           description: data?.error?.message || "Login failed",
@@ -62,7 +70,6 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
-
         <div className="space-y-4">
           <Input
             type="text"
@@ -72,7 +79,6 @@ export default function LoginPage() {
             onKeyPress={handleKeyPress}
             disabled={isLoading}
           />
-
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
@@ -95,6 +101,45 @@ export default function LoginPage() {
                 <Eye className="w-4 h-4" />
               )}
             </button>
+          </div>
+
+          {/* Radio buttons for page selection */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-700">
+              Select Page:
+            </label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="product"
+                  name="page-selection"
+                  value="product"
+                  checked={selectedPage === "product"}
+                  onChange={(e) => setSelectedPage(e.target.value)}
+                  disabled={isLoading}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <label htmlFor="product" className="text-sm text-gray-700">
+                  Product
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="product-logs"
+                  name="page-selection"
+                  value="product-logs"
+                  checked={selectedPage === "product-logs"}
+                  onChange={(e) => setSelectedPage(e.target.value)}
+                  disabled={isLoading}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <label htmlFor="product-logs" className="text-sm text-gray-700">
+                  Product Logs
+                </label>
+              </div>
+            </div>
           </div>
 
           <Button onClick={handleLogin} className="w-full" disabled={isLoading}>

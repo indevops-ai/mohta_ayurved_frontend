@@ -34,6 +34,7 @@ export default function ProductDashboard() {
   const [authChecked, setAuthChecked] = useState(false); // Add auth check flag
 
   const apiToken = getAuthToken();
+  const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
 
   // Set client flag after component mounts
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function ProductDashboard() {
   const fetchProducts = async () => {
     try {
       const res = await fetch(
-        "http://34.68.44.252:1337/api/products?populate[proprietary_fields][populate]=price_list&populate[classical_fields][populate]=price_list",
+        `${apiDomain}/api/products?populate[proprietary_fields][populate]=price_list&populate[classical_fields][populate]=price_list`,
         {
           headers: {
             Authorization: `Bearer ${apiToken}`,
@@ -97,9 +98,42 @@ export default function ProductDashboard() {
     router.push("/login");
   };
 
-  const handleUpdate = async (updatedProduct: Product) => {
+  interface Product {
+    id: number;
+    documentId: string;
+    name: string;
+    category: "proprietary" | "classical";
+    description: string;
+    proprietary_fields?: {
+      usage?: string;
+      ingredients?: string;
+      dosage?: string;
+      price_list?: Array<{
+        id?: number;
+        sr_no: number | string;
+        qty: string;
+        price: string;
+      }>;
+    };
+    classical_fields?: {
+      sub_category?: string;
+      usage?: string;
+      ingredients?: string;
+      dosage_anupan?: string;
+      reference?: string;
+      price_list?: Array<{
+        id?: number;
+        sr_no: number | string;
+        qty: string;
+        price: string;
+      }>;
+    };
+  }
+
+  // Your existing handleUpdate function remains the same
+  const handleUpdate = async (updatedProduct: Product): Promise<void> => {
     try {
-      const data: any = {
+      const data: Partial<Product> = {
         name: updatedProduct.name,
         category: updatedProduct.category,
         description: updatedProduct.description,
@@ -111,19 +145,13 @@ export default function ProductDashboard() {
           ingredients: updatedProduct.proprietary_fields?.ingredients,
           dosage: updatedProduct.proprietary_fields?.dosage,
           price_list: (updatedProduct.proprietary_fields?.price_list || []).map(
-            (item: {
-              id?: number;
-              sr_no: number | string;
-              qty: string;
-              price: string;
-            }) => {
+            (item) => {
               const { id, ...rest } = item;
               return rest;
             }
           ),
         };
-        // Clear classical fields when switching to proprietary
-        data.classical_fields = null;
+        data.classical_fields = undefined;
       }
 
       if (updatedProduct.category === "classical") {
@@ -134,24 +162,17 @@ export default function ProductDashboard() {
           dosage_anupan: updatedProduct.classical_fields?.dosage_anupan,
           reference: updatedProduct.classical_fields?.reference,
           price_list: (updatedProduct.classical_fields?.price_list || []).map(
-            (item: {
-              id?: number;
-              sr_no: number | string;
-              qty: string;
-              price: string;
-            }) => {
+            (item) => {
               const { id, ...rest } = item;
               return rest;
             }
           ),
         };
-        // Clear proprietary fields when switching to classical
-        data.proprietary_fields = null;
+        data.proprietary_fields = undefined;
       }
 
-      // Use documentId instead of id for Strapi v5
       const res = await fetch(
-        `http://34.68.44.252:1337/api/products/${updatedProduct.documentId}`,
+        `${apiDomain}/api/products/${updatedProduct.documentId}`,
         {
           method: "PUT",
           headers: {
